@@ -10,12 +10,12 @@ Philosopher::Philosopher(Scheduler* scheduler, size_t no): _scheduler(scheduler)
 void Philosopher::run(){
     while(_scheduler->getIsRunning()){
         this->_scheduler->checkIfAnotherHungry(_no);
-        this->_scheduler->updateMonitor(this->_no, States::WAIT_L, 0, eatingCount);
+        this->_scheduler->updateMonitor(this->_no, States::WAIT_L, 0, _eatingCount);
         this->_scheduler->getFork(_no, true, _no);
-        this->_scheduler->updateMonitor(this->_no, States::WAIT_R, 0, eatingCount);
+        this->_scheduler->updateMonitor(this->_no, States::WAIT_R, 0, _eatingCount);
         this->_scheduler->getFork((_no+1)%philosophersCount, false, _no);
         this->wait(eatMs,States::EAT);
-        eatingCount++;
+        _eatingCount++;
         this->_scheduler->notifyEatEnd();
         this->_scheduler->returnFork(_no);
         this->_scheduler->returnFork((_no+1)%philosophersCount);
@@ -24,7 +24,7 @@ void Philosopher::run(){
 }
 
 void Philosopher::wait(int time, States status){
-    this->_scheduler->updateMonitor(this->_no, status, 0, eatingCount);
+    this->_scheduler->updateMonitor(this->_no, status, 0, _eatingCount);
     int waitTime = static_cast<int>(eatMs * _scheduler->getRandom(0.8f, 1.2f));
     int totalTime = waitTime;
     while(waitTime>0){
@@ -35,12 +35,12 @@ void Philosopher::wait(int time, States status){
         std::chrono::duration<float, std::milli> elapsed = end-start;
         waitTime-=static_cast<int>(elapsed.count());
         int percent = (((totalTime-waitTime)*100)/totalTime);
-        this->_scheduler->updateMonitor(this->_no, status, (percent>100)?100:percent, eatingCount);
+        this->_scheduler->updateMonitor(this->_no, status, (percent>100)?100:percent, _eatingCount);
     }
 }
 
 int Philosopher::getEatingCount(){
-    return eatingCount;
+    return _eatingCount;
 }
 
 Philosopher::~Philosopher(){

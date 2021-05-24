@@ -14,10 +14,10 @@ void Scheduler::init(){
         _forksList.push_back(Fork(i));
     }
     for (size_t i = 0; i < philosophersCount; ++i){
-        _philosophers.push_back(Philosopher(this, i));
+        _philosophers.push_back(new Philosopher(this, i));
     }
     for (size_t i = 0; i < philosophersCount; ++i){
-        _philosopherThreads.push_back(std::thread(&Philosopher::run, &_philosophers[i]));
+        _philosopherThreads.push_back(std::thread(&Philosopher::run, _philosophers[i]));
     }
     _tMonitor = std::thread(&Monitor::run, &_monitor);
 }
@@ -66,19 +66,19 @@ unsigned int Scheduler::countDigits(unsigned int number)
 void Scheduler::checkIfAnotherHungry(size_t no){
     std::unique_lock<std::mutex> hungryLock(_mHungry);
     while(true){
-        int mealCount = _philosophers[0].getEatingCount();
+        int mealCount = _philosophers[0]->getEatingCount();
         size_t hungerMaxIndex = 0;
         for(size_t i = 1; i < philosophersCount; i++){
-            mealCount+=_philosophers[i].getEatingCount();
-            if(_philosophers[i].getEatingCount()<_philosophers[hungerMaxIndex].getEatingCount()){
+            mealCount+=_philosophers[i]->getEatingCount();
+            if(_philosophers[i]->getEatingCount()<_philosophers[hungerMaxIndex]->getEatingCount()){
                 hungerMaxIndex = i;
             }
         }
-        int eatingCounts = _philosophers[hungerMaxIndex].getEatingCount()*3;
+        int eatingCounts = _philosophers[hungerMaxIndex]->getEatingCount()*3;
         if(no==hungerMaxIndex || (mealCount/philosophersCount)<=eatingCounts){
             break;
         }
-        updateMonitor(no, States::WAIT_HUNGRY, 0, _philosophers[0].getEatingCount());
+        updateMonitor(no, States::WAIT_HUNGRY, 0, _philosophers[no]->getEatingCount());
         _hungryCondition.wait(hungryLock);
     }
 }
@@ -120,4 +120,8 @@ Scheduler::~Scheduler(){
 	}
     _monitor.endMonitor();
     join(_tMonitor);
+    for (Philosopher* &i : _philosophers)
+	{
+		delete i;
+	}
 }

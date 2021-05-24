@@ -13,7 +13,7 @@ class Scheduler{
 private:
     std::atomic<bool> _isRunning{ true };
     std::vector<std::thread> _philosopherThreads;
-    std::vector<Philosopher> _philosophers;
+    std::vector<Philosopher*> _philosophers;
     std::vector<Fork> _forksList;
     Random<float> _random;
     Monitor _monitor;
