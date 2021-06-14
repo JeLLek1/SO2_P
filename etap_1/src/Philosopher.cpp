@@ -25,7 +25,7 @@ void Philosopher::run(){
 
 void Philosopher::wait(int time, States status){
     this->_scheduler->updateMonitor(this->_no, status, 0, _eatingCount);
-    int waitTime = static_cast<int>(eatMs * _scheduler->getRandom(0.8f, 1.2f));
+    int waitTime = static_cast<int>(time * _scheduler->getRandom(0.8f, 1.2f));
     int totalTime = waitTime;
     while(waitTime>0){
         int delta = (waitTime>refreshTime)? refreshTime : waitTime;
